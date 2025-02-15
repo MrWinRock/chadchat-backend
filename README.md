@@ -1,6 +1,6 @@
 # ChadChat Backend
 
-This is the backend for ChadChat, a chat application. The backend is built using Node.js, Express.js, MongoDB, Socket.io, and Twilio.
+This is the backend for ChadChat, a chat application. The backend is built using Node.js, Express.js, MongoDB, Socket.io.
 
 ## Technologies Used
 
@@ -35,9 +35,6 @@ This is the backend for ChadChat, a chat application. The backend is built using
 3. Create a [.env](http://_vscodecontentref_/1) file in the root directory and add your MongoDB URI and Twilio credentials:
     ```env
     MONGODB_URI=mongodb+srv://<username>:<password>@chadchatdb.gly67.mongodb.net/?retryWrites=true&w=majority&appName=ChadChatDB
-    TWILIO_ACCOUNT_SID=your_twilio_account_sid
-    TWILIO_AUTH_TOKEN=your_twilio_auth_token
-    TWILIO_PHONE_NUMBER=your_twilio_phone_number
     ```
 
 4. Start the server:
