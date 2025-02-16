@@ -8,6 +8,21 @@ dotenv.config();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
+export const verifyToken = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: "Failed to authenticate token" });
+    }
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
 export const register = async (req, res) => {
   const { username, email, password, phone } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
