@@ -3,9 +3,11 @@ import { MongoClient, ServerApiVersion } from "mongodb";
 import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import { handleSocketConnection } from "./socket/chatSocket.js";
 
 dotenv.config();
 
@@ -40,6 +42,7 @@ async function run() {
 
 run().catch(console.dir);
 
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -57,38 +60,7 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("a user connected");
-
-  socket.on("privateMessage", async (data) => {
-    const { chatId, sender, receiver, message } = data;
-
-    try {
-      await client.connect();
-      const database = client.db("chadchat");
-      const messages = database.collection("messages");
-
-      const chatMessage = {
-        chatId: new ObjectId(chatId),
-        participants: [sender, receiver],
-        sender,
-        message,
-        timestamp: new Date(),
-      };
-
-      const result = await messages.insertOne(chatMessage);
-      io.to(receiver).emit("receiveMessage", chatMessage);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      await client.close();
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
-});
+handleSocketConnection(io);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);

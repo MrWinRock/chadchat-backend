@@ -19,7 +19,7 @@ export const verifyToken = (req, res, next) => {
       return res.status(401).json({ error: "Failed to authenticate token" });
     }
     req.userId = decoded.userId;
-    next();
+    res.status(200).json({ message: "Token is valid" });
   });
 };
 
