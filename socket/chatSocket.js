@@ -8,10 +8,22 @@ const client = new MongoClient(uri);
 
 export const handleSocketConnection = (io) => {
   io.on("connection", (socket) => {
-    console.log("a user connected");
+    console.log("A user connected");
+
+    socket.on("joinChat", (chatId) => {
+      socket.join(chatId);
+      console.log(`User joined chat: ${chatId}`);
+    });
+
+    socket.on("leaveChat", (chatId) => {
+      socket.leave(chatId);
+      console.log(`User left chat: ${chatId}`);
+    });
 
     socket.on("privateMessage", async (data) => {
+      console.log("privateMessage event received");
       const { chatId, sender, receiver, message } = data;
+      console.log("Received message data:", data);
 
       try {
         await client.connect();
@@ -27,16 +39,17 @@ export const handleSocketConnection = (io) => {
         };
 
         const result = await messages.insertOne(chatMessage);
-        io.to(receiver).emit("receiveMessage", chatMessage);
+        console.log("Message inserted:", result);
+        io.to(chatId).emit("receiveMessage", chatMessage);
       } catch (error) {
-        console.error(error);
+        console.error("Error inserting message:", error);
       } finally {
         await client.close();
       }
     });
 
     socket.on("disconnect", () => {
-      console.log("user disconnected");
+      console.log("A user disconnected");
     });
   });
 };

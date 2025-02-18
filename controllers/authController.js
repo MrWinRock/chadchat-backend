@@ -19,7 +19,7 @@ export const verifyToken = (req, res, next) => {
       return res.status(401).json({ error: "Failed to authenticate token" });
     }
     req.userId = decoded.userId;
-    res.status(200).json({ message: "Token is valid" });
+    res.status(200).json({ message: "Token is valid", userId: req.userId });
   });
 };
 
@@ -79,7 +79,7 @@ export const login = async (req, res) => {
       { $set: { lastLogin: new Date(), status: "online" } }
     );
 
-    res.json({ token });
+    res.json({ token, userId: user._id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   } finally {

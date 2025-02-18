@@ -47,6 +47,7 @@ export const getChatList = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   const { chatId, sender, receiver, message } = req.body;
+  console.log("Sending message:", req.body);
 
   try {
     await client.connect();
@@ -62,8 +63,10 @@ export const sendMessage = async (req, res) => {
     };
 
     const result = await messages.insertOne(chatMessage);
+    console.log("Message inserted:", result);
     res.status(201).json(result);
   } catch (error) {
+    console.error("Error inserting message:", error);
     res.status(500).json({ error: error.message });
   } finally {
     await client.close();
