@@ -1,12 +1,10 @@
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { client } from "../server.js"; // Import the connected MongoDB client
 
 dotenv.config();
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
 
 export const verifyToken = (req, res, next) => {
   const token = req.headers["authorization"]?.split(" ")[1];
@@ -25,12 +23,22 @@ export const verifyToken = (req, res, next) => {
 
 export const register = async (req, res) => {
   const { username, email, password, phone } = req.body;
+  console.log("Received registration data:", req.body);
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const users = database.collection("users");
+
+    const existingUser = await users.findOne({
+      $or: [{ username }, { email }],
+    });
+    if (existingUser) {
+      console.log("Username or email already exists:", existingUser);
+      return res
+        .status(400)
+        .json({ error: "Username or email already exists" });
+    }
 
     const user = {
       _id: new ObjectId(),
@@ -44,11 +52,11 @@ export const register = async (req, res) => {
     };
 
     const result = await users.insertOne(user);
+    console.log("User registered successfully:", result);
     res.status(201).json({ userId: result.insertedId });
   } catch (error) {
+    console.error("Error during registration:", error);
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };
 
@@ -56,7 +64,6 @@ export const login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const users = database.collection("users");
 
@@ -79,11 +86,9 @@ export const login = async (req, res) => {
       { $set: { lastLogin: new Date(), status: "online" } }
     );
 
-    res.json({ token, userId: user._id });
+    res.json({ token, userId: user._id.toString() }); // Ensure userId is a string
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };
 
@@ -91,7 +96,6 @@ export const logout = async (req, res) => {
   const { userId } = req.body;
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const users = database.collection("users");
 
@@ -109,7 +113,5 @@ export const logout = async (req, res) => {
     res.json({ message: "User logged out successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };

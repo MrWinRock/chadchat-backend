@@ -1,16 +1,13 @@
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import dotenv from "dotenv";
+import { client } from "../server.js"; // Import the connected MongoDB client
 
 dotenv.config();
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
 
 export const getChatList = async (req, res) => {
   const { username } = req.params;
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const chats = database.collection("chats");
 
@@ -40,8 +37,6 @@ export const getChatList = async (req, res) => {
     res.json(chatList);
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };
 
@@ -50,7 +45,6 @@ export const sendMessage = async (req, res) => {
   console.log("Sending message:", req.body);
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const messages = database.collection("messages");
 
@@ -68,8 +62,6 @@ export const sendMessage = async (req, res) => {
   } catch (error) {
     console.error("Error inserting message:", error);
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };
 
@@ -77,7 +69,6 @@ export const getMessagesByChatId = async (req, res) => {
   const { chatId } = req.params;
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const messages = database.collection("messages");
 
@@ -88,8 +79,6 @@ export const getMessagesByChatId = async (req, res) => {
     res.json(chatMessages);
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };
 
@@ -97,7 +86,6 @@ export const createChat = async (req, res) => {
   const { participants } = req.body;
 
   try {
-    await client.connect();
     const database = client.db("chadchat");
     const chats = database.collection("chats");
 
@@ -121,7 +109,5 @@ export const createChat = async (req, res) => {
     res.status(201).json({ chatId: result.insertedId });
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } finally {
-    await client.close();
   }
 };

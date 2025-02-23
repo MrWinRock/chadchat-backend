@@ -8,12 +8,9 @@ import {
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("Hello from authRoutes!");
-});
-router.get("/verify-token", verifyToken);
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
+router.get("/verify-token", verifyToken);
 
 export default router;

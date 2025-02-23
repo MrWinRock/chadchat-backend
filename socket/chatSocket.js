@@ -1,10 +1,8 @@
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import dotenv from "dotenv";
+import { client } from "../server.js"; // Import the connected MongoDB client
 
 dotenv.config();
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
 
 export const handleSocketConnection = (io) => {
   io.on("connection", (socket) => {
@@ -26,7 +24,6 @@ export const handleSocketConnection = (io) => {
       console.log("Received message data:", data);
 
       try {
-        await client.connect();
         const database = client.db("chadchat");
         const messages = database.collection("messages");
 
@@ -43,8 +40,6 @@ export const handleSocketConnection = (io) => {
         io.to(chatId).emit("receiveMessage", chatMessage);
       } catch (error) {
         console.error("Error inserting message:", error);
-      } finally {
-        await client.close();
       }
     });
 
