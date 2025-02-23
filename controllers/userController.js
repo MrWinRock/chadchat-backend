@@ -79,6 +79,31 @@ export const getPhone = async (req, res) => {
   }
 };
 
+export const getUserInfo = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    await client.connect();
+    const database = client.db("chadchat");
+    const users = database.collection("users");
+
+    const user = await users.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  } finally {
+    await client.close();
+  }
+};
+
 export const updatePassword = async (req, res) => {
   const { userId, newPassword } = req.body;
   const hashedPassword = await bcrypt.hash(newPassword, 10);

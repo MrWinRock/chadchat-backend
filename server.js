@@ -38,7 +38,7 @@ async function connectToMongoDB() {
     );
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
-    process.exit(1); // Exit the process with an error code
+    process.exit(1);
   }
 }
 

@@ -10,10 +10,23 @@ export const getChatList = async (req, res) => {
   try {
     const database = client.db("chadchat");
     const chats = database.collection("chats");
+    const messages = database.collection("messages");
 
     const chatList = await chats
       .aggregate([
         { $match: { participants: username } },
+        {
+          $lookup: {
+            from: "messages",
+            let: { chatId: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$chatId", "$$chatId"] } } },
+              { $sort: { timestamp: -1 } },
+              { $limit: 1 },
+            ],
+            as: "lastMessage",
+          },
+        },
         {
           $project: {
             chatId: "$_id",
@@ -29,7 +42,8 @@ export const getChatList = async (req, res) => {
                 0,
               ],
             },
-            timestamp: "$createdAt",
+            lastMessage: { $arrayElemAt: ["$lastMessage.message", 0] },
+            timestamp: { $arrayElemAt: ["$lastMessage.timestamp", 0] },
           },
         },
       ])
