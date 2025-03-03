@@ -125,3 +125,18 @@ export const createChat = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const deleteChat = async (req, res) => {
+  const { chatId } = req.body;
+
+  try {
+    const database = client.db("chadchat");
+    const chats = database.collection("chats");
+
+    const result = await chats.deleteOne({ _id: new ObjectId(chatId) });
+    console.log("Chat deleted:", result);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
