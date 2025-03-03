@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { client } from "../server.js"; // Import the connected MongoDB client
+import { client } from "../server.js";
 
 dotenv.config();
 
@@ -86,7 +86,7 @@ export const login = async (req, res) => {
       { $set: { lastLogin: new Date(), status: "online" } }
     );
 
-    res.json({ token, userId: user._id.toString() }); // Ensure userId is a string
+    res.json({ token, userId: user._id.toString() });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -111,6 +111,27 @@ export const logout = async (req, res) => {
     }
 
     res.json({ message: "User logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const unregister = async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const database = client.db("chadchat");
+    const users = database.collection("users");
+
+    const objectId = new ObjectId(userId);
+
+    const result = await users.deleteOne({ _id: objectId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "User unregistered successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
